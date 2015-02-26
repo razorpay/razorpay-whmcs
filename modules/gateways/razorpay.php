@@ -2,7 +2,7 @@
 function razorpay_config() {
 
     $configarray = array(
-        "FriendlyName" => array("Type" => "System", "Value" => "Razorpay"),
+        "FriendlyName" => array("Type" => "System", "Value" => "Razorpay (Credit Card/Debit Card/Net Banking)"),
         "KeyId" => array("FriendlyName" => "Key Id", "Type" => "text", "Size" => "50", "Description" => "Enter your Razorpay Key Id here",),
         "KeySecret" => array("FriendlyName" => "Key Secret", "Type" => "text", "Size" => "50", "Description" => "Enter your Razorpay Key Secret here",),
     );
