@@ -69,6 +69,7 @@ function razorpay_link($params) {
                 var rzp1 = new Razorpay(razorpay_options);
                 rzp1.open();
                 razorpay_open = true;
+                rzp1.modal.options.backdropClose = false;
             }    
 
             </script>";
