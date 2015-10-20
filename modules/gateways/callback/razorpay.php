@@ -51,7 +51,7 @@ $error = "";
 
 try {
     $url = 'https://api.razorpay.com/v1/payments/'.$razorpay_payment_id.'/capture';
-    $fields_string="amount=$amount";
+    $fields_string="amount=$converted_amount";
 
     //cURL Request
     $ch = curl_init();
