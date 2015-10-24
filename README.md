@@ -12,11 +12,12 @@ Allows you to use Razorpay payment gateway with the WHMCS Store.
 
 ## Configuration
 
-1. Log into WHMCS as administrator (http://cscart_installation/admin). Navigate to Setup->Payments->Payment Gateways.
-2. Choose Razorpay in the Activate dropdown and Activate it
-3. Fill the Key Id and Key Secret. 
-4. Choose Convert for Processing to INR if your store has a different default currency. Make sure you update the exchange rate in that case in your currency management.
-5. Click 'Save Changes'
+1. Log into WHMCS as administrator (http://cscart_installation/admin). 
+2. Navigate to Setup->Payments->Payment Gateways.
+3. Choose Razorpay in the Activate dropdown and Activate it
+4. Fill the Key Id and Key Secret. 
+5. Choose Convert for Processing to INR if your store has a different default currency. Make sure you update the exchange rate in that case in your currency management.
+6. Click 'Save Changes'
 
 ### Support
 
