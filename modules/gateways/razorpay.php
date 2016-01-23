@@ -2,9 +2,11 @@
 function razorpay_config() {
 
     $configarray = array(
-        "FriendlyName" => array("Type" => "System", "Value" => "Razorpay (Credit Card/Debit Card/Net Banking)"),
+        "FriendlyName" => array("Type" => "System", "Value" => "Razorpay"),
         "KeyId" => array("FriendlyName" => "Key Id", "Type" => "text", "Size" => "50", "Description" => "Enter your Razorpay Key Id here",),
         "KeySecret" => array("FriendlyName" => "Key Secret", "Type" => "text", "Size" => "50", "Description" => "Enter your Razorpay Key Secret here",),
+        "ThemeLogo" => array("FriendlyName" => "Logo URL", "Type" => "text", "Size" => "50", "Description" => "Enter the full URL for the logo including 'https://' or 'http://' [max: 56x56 px | file: png/jpg/gif/ico]",),
+        "ThemeColor" => array("FriendlyName" => "Theme Colour", "Type" => "text", "Description" => "The HexCode for the color including '#'. eg: #00BCD4",),
     );
     return $configarray;
 }
@@ -13,6 +15,8 @@ function razorpay_link($params) {
     # Gateway Specific Variables
     $key_id = $params['KeyId'];
     $key_secret = $params['KeySecret'];  
+    $theme_color = $params['ThemeColor'];  
+    $theme_logo = $params['ThemeLogo'];  
 
     # Invoice Variables
     $order_id = $params['invoiceid'];
@@ -48,8 +52,18 @@ function razorpay_link($params) {
                 'amount': '".$amount."',
                 'currency': '".$currency."',
                 'name': '".$name."',
-                'description': '".$description."',
-                'handler': function (transaction) {
+                'description': '".$description."',";
+	
+	if(isset($theme_logo)&&$theme_logo!=""){
+		$js .= "                'image': '".$theme_logo."',";
+	}
+	if(isset($theme_color)&&$theme_color!=""){
+		$js .= "                'theme': {
+                    'color': '".$theme_color."'
+                },";
+	}
+    
+	$js .= "                'handler': function (transaction) {
                     razorpay_submit = true;
                     document.getElementById('razorpay_payment_id').value = transaction.razorpay_payment_id;
                     document.getElementById('razorpay-form').submit();
