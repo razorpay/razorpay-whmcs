@@ -11,6 +11,8 @@ Allows you to use Razorpay payment gateway with the WHMCS Store.
  - Use the `master` branch if you are on WHMCS 6
  - Use the `whmcs-5` branch if you are on WHMCS 5
 
+## Downloads: [whmcs-6][6] [whmcs-5][5]
+
 ## Installation
 
 1. Ensure you have latest version of WHMCS installed.
@@ -35,3 +37,5 @@ Visit [https://razorpay.com](https://razorpay.com) for support requests or email
 This is licensed under the [MIT License][mit]
 
 [mit]: https://opensource.org/licenses/MIT
+[6]: https://github.com/razorpay/razorpay-whmcs/archive/master.zip
+[5]: https://github.com/razorpay/razorpay-whmcs/archive/whmcs-5.zip
