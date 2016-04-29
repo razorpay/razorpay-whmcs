@@ -1,11 +1,18 @@
 ## Razorpay Payment Extension for WHMCS
+
 Allows you to use Razorpay payment gateway with the WHMCS Store.
 
 ## Description
 
-​This is the Razorpay payment gateway plugin for WHMCS. Allows Indian merchants to accept credit cards, debit cards, netbanking with the WHMCS store. It uses a seamless integration, allowing the customer to pay on your website without being redirected away from your WHMCS website.
+​This is the Razorpay payment gateway plugin for WHMCS. Allows Indian merchants to accept credit cards, debit cards, netbanking and wallet payments with the WHMCS store. It uses a seamless integration, allowing the customer to pay on your website without being redirected away from your WHMCS website.
+
+## Branches
+
+ - Use the `whmcs-6` branch if you are on WHMCS 6
+ - Use the `master` branch if you are on WHMCS 5
 
 ## Installation
+
 1. Ensure you have latest version of WHMCS installed.
 2. Download the zip of this repo.
 3. Upload the contents of the repo to your WHMCS Installation directory (content of module folder goes in module folder).
@@ -21,4 +28,10 @@ Allows you to use Razorpay payment gateway with the WHMCS Store.
 
 ### Support
 
-Visit [https://razorpay.com](https://razorpay.com) for support requests or email contact@razorpay.com.
+Visit [https://razorpay.com](https://razorpay.com) for support requests or email <integrations@razorpay.com>.
+
+### License
+
+This is licensed under the [MIT License][mit]
+
+[mit]: https://opensource.org/licenses/MIT
