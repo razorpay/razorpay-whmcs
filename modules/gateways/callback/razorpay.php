@@ -11,6 +11,7 @@
 require_once __DIR__ . '/../../../init.php';
 require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
+
 // Detect module name from filename.
 $gatewayModuleName = 'razorpay';
 // Fetch gateway configuration parameters.
@@ -75,7 +76,7 @@ try {
             if (!empty($response_array['error']['code'])) {
                 $error = $response_array['error']['code'].":".$response_array['error']['description'];
             } else {
-                $error = "RAZORPAY_ERROR:Invalid Response <br/>".$result;
+                $error = "RAZORPAY_ERROR: Invalid Response <br/>".$result;
             }
         }
     }
@@ -84,7 +85,7 @@ try {
     curl_close($ch);
 } catch (Exception $e) {
     $success = false;
-    $error ="WHMCS_ERROR:Request to Razorpay Failed";
+    $error ="WHMCS_ERROR: Request to Razorpay Failed";
 }
 if ($success === true) {
     # Successful
