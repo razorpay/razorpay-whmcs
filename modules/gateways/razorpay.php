@@ -74,12 +74,12 @@ function razorpay_link($params)
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
 
     return <<<EOT
-<form name="razorpay-form" id="razorpay-form" action="'.$callbackUrl.'" method="POST">
-    <input type="hidden" name="merchant_order_id" id="merchant_order_id" value="'.$invoiceId.'"/>
+<form name="razorpay-form" id="razorpay-form" action="$callbackUrl" method="POST">
+    <input type="hidden" name="merchant_order_id" id="merchant_order_id" value="$invoiceId"/>
     <script src="$checkoutUrl"
         data-key            = "$keyId"
         data-amount         = "$amount"
-        data-currency       = "$currency"
+        data-currency       = "$currencyCode"
         data-description    = "Inv#$invoiceId"
 
         data-prefill.name   = "$name"

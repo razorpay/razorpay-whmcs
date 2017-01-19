@@ -8,9 +8,10 @@
  */
 
 // Require libraries needed for gateway module functions.
-require_once __DIR__ . '/../../../init.php';
-require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
-require_once __DIR__ . '/../../../includes/invoicefunctions.php';
+include('../../../init.php');
+include("../../../includes/functions.php");
+include('../../../includes/gatewayfunctions.php');
+include('../../../includes/invoicefunctions.php');
 
 // Detect module name from filename.
 $gatewayModuleName = 'razorpay';
@@ -26,12 +27,15 @@ $keySecret = $gatewayParams["keySecret"];
 $merchant_order_id = $_POST["merchant_order_id"];
 $razorpay_payment_id = $_POST["razorpay_payment_id"];
 // Validate Callback Invoice ID.
+//echo "i am here";
 $merchant_order_id = checkCbInvoiceID($merchant_order_id, $gatewayParams['name']);
 // Check Callback Transaction ID.
+//echo "i am before check transactionID";
 checkCbTransID($razorpay_payment_id);
 /**
  * Fetch amount to verify transaction
  */
+//echo "i am before fetch invoice";
 # Fetch invoice to get the amount
 $result = mysql_fetch_assoc(select_query('tblinvoices', 'total', array("id"=>$merchant_order_id)));
 $amount = $result['total'];
@@ -48,6 +52,7 @@ if ($currency['code'] !== 'INR') {
 $converted_amount = 100*$converted_amount;
 $success = true;
 $error = "";
+//echo "i am before try";
 try {
     $url = 'https://api.razorpay.com/v1/payments/'.$razorpay_payment_id.'/capture';
     $fields_string="amount=$converted_amount";
@@ -90,7 +95,7 @@ try {
 if ($success === true) {
     # Successful
     # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
-    addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amount, 0, $gatewayParams["name"]);
+    addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amount, 0, $gatewayModuleName);
     logTransaction($gatewayParams["name"], $_POST, "Successful"); # Save to Gateway Log: name, data array, status
 } else {
     # Unsuccessful
