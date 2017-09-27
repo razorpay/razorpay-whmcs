@@ -32,15 +32,17 @@ checkCbTransID($razorpay_payment_id);
 /**
  * Fetch amount to verify transaction
  */
-# Fetch invoice to get the amount
-$result = mysql_fetch_assoc(select_query('tblinvoices', 'total', array("id"=>$merchant_order_id)));
+# Fetch invoice to get the amount and userid
+$result = mysql_fetch_assoc(select_query('tblinvoices', 'total, userid', array("id"=>$merchant_order_id))); 
 $amount = $result['total'];
 # Check if amount is INR, convert if not.
-$currency = getCurrency();
-if ($currency['code'] !== 'INR') {
-    $result = mysql_fetch_array(select_query("tblcurrencies", "id", array("code"=>'INR')));
-    $inr_id = $result['id'];
-    $converted_amount = convertCurrency($amount, $currency['id'], $inr_id);
+//$currency = getCurrency();
+$result = mysql_fetch_assoc(select_query('tblclients', 'currency', array("id"=>$result['userid'])));
+$currency_id = $result['currency'];
+$result = mysql_fetch_array(select_query("tblcurrencies", "id", array("code"=>'INR')));
+$inr_id = $result['id'];
+if($currency_id != $inr_id) {
+    $converted_amount = convertCurrency($amount, $currency_id, $inr_id);
 } else {
     $converted_amount = $amount;
 }
@@ -70,7 +72,7 @@ try {
         $response_array = json_decode($result, true);
         //Check success response
         if ($http_status === 200 and isset($response_array['error']) === false) {
-            $success = true;
+            $success = true;    
         } else {
             $success = false;
             if (!empty($response_array['error']['code'])) {
