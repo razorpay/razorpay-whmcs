@@ -2,7 +2,20 @@
 
 Changelog for Razorpay-PHP SDK. Follows [keepachangelog.com](http://keepachangelog.com/en/0.3.0/) for formatting.
 
-## Unreleased
+## [2.0.0] - 2017-03-07
+### Added
+- Support for custom Application header
+- Support for card entity
+- Support for Webhook and Order Signature verification
+- Support for direct refund creation via Razorpay\Api\Refund::create()
+- Support for Utility functions via Razorpay\Api\Utility::verifyPaymentSignature and Razorpay\Api\Utility::verifyWebhookSignature
+- Support for case insensitive error codes
+- Support for 2xx HTTP status codes
+
+### Changed
+- Razorpay\Api\Payment::refunds() now returns a Razorpay\Api\Collection object instead of Razorpay\Api\Refund object
+- Razorpay\Api\Api::$baseUrl, Razorpay\Api\Api::$key and Razorpay\Api\Api::$secret are now `protected` instead of `public`
+
 
 ## [1.2.9] - 2017-01-03
 ### Added
@@ -50,7 +63,7 @@ Changelog for Razorpay-PHP SDK. Follows [keepachangelog.com](http://keepachangel
 - Initial Release
 
 
-[Unreleased]: https://github.com/razorpay/razorpay-php/compare/1.2.8...HEAD
+[Unreleased]: https://github.com/razorpay/razorpay-php/compare/2.0.0...HEAD
 [1.2.1]: https://github.com/razorpay/razorpay-php/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/razorpay/razorpay-php/compare/1.1.0...1.2.0
 [1.2.2]: https://github.com/razorpay/razorpay-php/compare/1.2.1...1.2.2
@@ -60,3 +73,4 @@ Changelog for Razorpay-PHP SDK. Follows [keepachangelog.com](http://keepachangel
 [1.2.7]: https://github.com/razorpay/razorpay-php/compare/1.2.6...1.2.7
 [1.2.8]: https://github.com/razorpay/razorpay-php/compare/1.2.7...1.2.8
 [1.2.9]: https://github.com/razorpay/razorpay-php/compare/1.2.8...1.2.9
+[2.0.0]: https://github.com/razorpay/razorpay-php/compare/1.2.9...2.0.0
