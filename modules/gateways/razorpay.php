@@ -88,7 +88,7 @@ function razorpay_link($params)
     
     // System Parameters
     $whmcsVersion = $params['whmcsVersion'];
-    $callbackUrl = $params['systemurl'] . '/modules/gateways/callback/razorpay.php';
+    $callbackUrl = $params['systemurl'] . 'modules/gateways/callback/razorpay.php';
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
     $orderId = $razorpayOrder['id'];
 
