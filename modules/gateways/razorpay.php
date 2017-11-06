@@ -1,6 +1,6 @@
 <?php
 
-require_once('callback/razorpay-php/razorpay.php');
+require_once __DIR__ . '/callback/razorpay-php/Razorpay.php';
 use Razorpay\Api\Api;
 
 /**
@@ -66,7 +66,6 @@ function razorpay_link($params)
     
     // Invoice Parameters
     $invoiceId = $params['invoiceid'];
-    $description = $params["description"];
     $amount = $params['amount'] * 100; // Required to be converted to Paisa.
     $currencyCode = $params['currency'];
     
@@ -78,20 +77,20 @@ function razorpay_link($params)
     // create Razorpay order
     $api = new Api($keyId, $keySecret);
 
-    $razorpay_order = $api->order->create([
+    $razorpayOrder = $api->order->create([
         'receipt'         => $invoiceId,
         'amount'          => $amount,
         'currency'        => 'INR',
         'payment_capture' => 1,
     ]);
 
-    $_SESSION['razorpay_order_id'] = $razorpay_order['id'];
+    $_SESSION['razorpay_order_id'] = $razorpayOrder['id'];
     
     // System Parameters
     $whmcsVersion = $params['whmcsVersion'];
     $callbackUrl = $params['systemurl'] . '/modules/gateways/callback/razorpay.php';
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
-    $orderId = $razorpay_order['id'];
+    $orderId = $razorpayOrder['id'];
 
     return <<<EOT
 <form name="razorpay-form" id="razorpay-form" action="$callbackUrl" method="POST">
