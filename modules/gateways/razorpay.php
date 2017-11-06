@@ -1,11 +1,16 @@
 <?php
 
+require_once('callback/razorpay-php/razorpay.php');
+use Razorpay\Api\Api;
+
 /**
  * WHMCS Razorpay Payment Gateway Module
  */
-if (!defined("WHMCS")) {
+if (!defined("WHMCS"))
+{
     die("This file cannot be accessed directly");
 }
+
 /**
  * Define module related meta data.
  * @return array
@@ -44,6 +49,7 @@ function razorpay_config()
         )
     );
 }
+
 /**
  * Payment link.
  * Required by third party payment gateway modules only.
@@ -56,6 +62,7 @@ function razorpay_link($params)
 {
     // Gateway Configuration Parameters
     $keyId = $params['keyId'];
+    $keySecret = $params['keySecret'];
     
     // Invoice Parameters
     $invoiceId = $params['invoiceid'];
@@ -67,11 +74,24 @@ function razorpay_link($params)
     $name = $params['clientdetails']['firstname'].' '.$params['clientdetails']['lastname'];
     $email = $params['clientdetails']['email'];
     $contact = $params['clientdetails']['phonenumber'];
+
+    // create Razorpay order
+    $api = new Api($keyId, $keySecret);
+
+    $razorpay_order = $api->order->create([
+        'receipt'         => $invoiceId,
+        'amount'          => $amount,
+        'currency'        => 'INR',
+        'payment_capture' => 1,
+    ]);
+
+    $_SESSION['razorpay_order_id'] = $razorpay_order['id'];
     
     // System Parameters
     $whmcsVersion = $params['whmcsVersion'];
     $callbackUrl = $params['systemurl'] . '/modules/gateways/callback/razorpay.php';
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
+    $orderId = $razorpay_order['id'];
 
     return <<<EOT
 <form name="razorpay-form" id="razorpay-form" action="$callbackUrl" method="POST">
@@ -88,6 +108,8 @@ function razorpay_link($params)
 
         data-notes.whmcs_invoice_id = "$invoiceId"
         data-notes.whmcs_version = "$whmcsVersion"
+
+        data-order_id = "$orderId"
     ></script>
 </form>
 EOT;

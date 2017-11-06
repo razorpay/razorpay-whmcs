@@ -7,6 +7,9 @@
  * Logging the Transaction for debugging and Adding Payment to an Invoice.
  */
 
+require_once('razorpay-php/razorpay.php');
+use Razorpay\Api\Api;
+
 // Require libraries needed for gateway module functions.
 include('../../../init.php');
 include("../../../includes/functions.php");
@@ -17,21 +20,24 @@ include('../../../includes/invoicefunctions.php');
 $gatewayModuleName = 'razorpay';
 // Fetch gateway configuration parameters.
 $gatewayParams = getGatewayVariables($gatewayModuleName);
+
 // Die if module is not active.
-if (!$gatewayParams['type']) {
+if (!$gatewayParams['type'])
+{
     die("Module Not Activated");
 }
-$keyId = $gatewayParams["keyId"];
+
+$keyId     = $gatewayParams["keyId"];
 $keySecret = $gatewayParams["keySecret"];
-// Retrieve data returned in payment gateway callback
-$merchant_order_id = $_POST["merchant_order_id"];
-$razorpay_payment_id = $_POST["razorpay_payment_id"];
+
 // Validate Callback Invoice ID.
 //echo "i am here";
 $merchant_order_id = checkCbInvoiceID($merchant_order_id, $gatewayParams['name']);
+
 // Check Callback Transaction ID.
 //echo "i am before check transactionID";
 checkCbTransID($razorpay_payment_id);
+
 /**
  * Fetch amount to verify transaction
  */
@@ -39,67 +45,68 @@ checkCbTransID($razorpay_payment_id);
 # Fetch invoice to get the amount
 $result = mysql_fetch_assoc(select_query('tblinvoices', 'total', array("id"=>$merchant_order_id)));
 $amount = $result['total'];
+
 # Check if amount is INR, convert if not.
 $currency = getCurrency();
-if ($currency['code'] !== 'INR') {
+
+if ($currency['code'] !== 'INR')
+{
     $result = mysql_fetch_array(select_query("tblcurrencies", "id", array("code"=>'INR')));
     $inr_id = $result['id'];
     $converted_amount = convertCurrency($amount, $currency['id'], $inr_id);
-} else {
+}
+else
+{
     $converted_amount = $amount;
 }
+
 # Amount in Paisa
-$converted_amount = 100*$converted_amount;
+$converted_amount = 100 * $converted_amount;
 $success = true;
 $error = "";
 //echo "i am before try";
-try {
-    $url = 'https://api.razorpay.com/v1/payments/'.$razorpay_payment_id.'/capture';
-    $fields_string="amount=$converted_amount";
-    //cURL Request
-    $ch = curl_init();
-    //set the url, number of POST vars, POST data
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_USERPWD, $keyId . ":" . $keySecret);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    //execute post
-    $result = curl_exec($ch);
-    $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    if ($result === false) {
-        $success = false;
-        $error = 'Curl error: ' . curl_error($ch);
-    } else {
-        $response_array = json_decode($result, true);
-        //Check success response
-        if ($http_status === 200 and isset($response_array['error']) === false) {
-            $success = true;
-        } else {
-            $success = false;
-            if (!empty($response_array['error']['code'])) {
-                $error = $response_array['error']['code'].":".$response_array['error']['description'];
-            } else {
-                $error = "RAZORPAY_ERROR: Invalid Response <br/>".$result;
-            }
-        }
+
+// Retrieve data returned in payment gateway callback
+$merchant_order_id   = $_POST["merchant_order_id"];
+$razorpay_payment_id = $_POST["razorpay_payment_id"];
+$razorpay_order_id   = $_SESSION['razorpay_order_id'];
+$razorpay_signature  = $_POST['razorpay_signature'];
+
+$api = new Api($keyId, $keySecret);
+$payment = $api->payment->fetch($razorpay_payment_id);
+
+try
+{
+    $signature = hash_hmac('sha256', $razorpay_order_id . '|' . $razorpay_payment_id, $keySecret);
+
+    if (hash_equals($signature , $razorpay_signature))
+    {
+        $success = true;
     }
-        
-    //close connection
-    curl_close($ch);
-} catch (Exception $e) {
+    else
+    {
+        $success = false;
+        $error = "PAYMENT_ERROR: Payment failed";
+    }
+}
+catch (Exception $e)
+{
     $success = false;
     $error ="WHMCS_ERROR: Request to Razorpay Failed";
 }
-if ($success === true) {
+
+if ($success === true)
+{
     # Successful
     # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
     addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amount, 0, $gatewayModuleName);
     logTransaction($gatewayParams["name"], $_POST, "Successful"); # Save to Gateway Log: name, data array, status
-} else {
+}
+else
+{
     # Unsuccessful
     # Save to Gateway Log: name, data array, status
     logTransaction($gatewayParams["name"], $_POST, "Unsuccessful-".$error . ". Please check razorpay dashboard for Payment id: ".$_POST['razorpay_payment_id']);
 }
+
 header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id);
