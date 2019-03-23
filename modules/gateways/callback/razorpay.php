@@ -92,7 +92,7 @@ try {
 if ($success === true) {
     # Successful
     # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
-    addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amount, 0, $gatewayParams["name"]);
+    addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amount, 0, $gatewayParams["paymentmethod"]);
     logTransaction($gatewayParams["name"], $_POST, "Successful"); # Save to Gateway Log: name, data array, status
 } else {
     # Unsuccessful
