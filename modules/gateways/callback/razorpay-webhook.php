@@ -4,7 +4,7 @@
 require_once __DIR__ . '/../../../init.php';
 require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
-require_once __DIR__.'/../razorpay-sdk/Razorpay.php';
+require_once __DIR__ . '/../razorpay/razorpay-sdk/Razorpay.php';
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
