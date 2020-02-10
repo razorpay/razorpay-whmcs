@@ -5,7 +5,6 @@ require_once __DIR__.'/razorpay-sdk/Razorpay.php';
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
 
-
 const RAZORPAY_WHMCS_VERSION= '2.0';
 const RAZORPAY_PAYMENT_ID   = 'razorpay_payment_id';
 const RAZORPAY_ORDER_ID     = 'razorpay_order_id';
@@ -42,7 +41,7 @@ function razorpay_config()
     // Fetch gateway configuration parameters.
     $gatewayParams = getGatewayVariables($gatewayModuleName);
 
-    $webhookUrl = $gatewayParams['systemurl']; //TO DO: change the webhook URL once script implemented.
+    $webhookUrl = $gatewayParams['systemurl'].'modules/gateways/callback/razorpay-webhook.php';
 
     return array(
         // the friendly display name for a payment gateway should be
