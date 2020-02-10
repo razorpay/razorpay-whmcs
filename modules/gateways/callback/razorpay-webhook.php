@@ -20,6 +20,8 @@ $gatewayModuleName = 'razorpay';
 // Fetch gateway configuration parameters.
 $gatewayParams = getGatewayVariables($gatewayModuleName);
 
+$api = new Api($gatewayParams['keyId'], $gatewayParams['keySecret']);
+
 /**
  * Process a Razorpay Webhook. We exit in the following cases:
  * - Successful processed
@@ -65,7 +67,7 @@ if ($enabled === 'on' and
 
         try
         {
-            $this->api->utility->verifyWebhookSignature($post,
+            $api->utility->verifyWebhookSignature($post,
                                                         $_SERVER['HTTP_X_RAZORPAY_SIGNATURE'],
                                                         $razorpayWebhookSecret);
         }
@@ -131,12 +133,9 @@ function orderPaid(array $data, $gatewayParams)
 
     $razorpayPaymentId = $data['payload']['payment']['entity']['id'];
 
-
-    $payment = getPaymentEntity($razorpayPaymentId, $data, $gatewayParams);
-
     $amount = getOrderAmountAsInteger($order);
 
-    if($payment['amount'] === $amount)
+    if($data['payload']['payment']['entity']['amount'] === $amount)
     {
         $success = true;
     }
@@ -166,30 +165,6 @@ function orderPaid(array $data, $gatewayParams)
 
     // Graceful exit since payment is now processed.
     exit;
-}
-
-function getPaymentEntity($razorpayPaymentId, $data, $gatewayParams)
-{
-    $api = new Api($gatewayParams['keyId'], $gatewayParams['keySecret']);
-
-    try
-    {
-        $payment = $api->payment->fetch($razorpayPaymentId);
-    }
-    catch (Exception $e)
-    {
-    	$log = array(
-            'message'         => $e->getMessage(),
-            'payment_id'      => $razorpayPaymentId,
-            'event'           => $data['event']
-        );
-
-        logTransaction($gatewayParams["name"], $log, "Unsuccessful-".$e->getMessage() . ". Please check razorpay dashboard for Payment id: ".$razorpayPaymentId);
-
-        exit;
-    }
-
-    return $payment;
 }
 
 /**
