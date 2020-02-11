@@ -76,7 +76,7 @@ function razorpay_config()
             'FriendlyName' => 'Enable Webhook',
             'Type' => 'yesno',
             'Default' => false,
-            'Description' => 'Enable Razorpay Webhook <a href="https://dashboard.razorpay.com/#/app/webhooks">here</a> with the URL listed below. <br/><span>'.$webhookUrl.'</span><br/><br/>Instructions and guide to <a href="https://github.com/razorpay/razorpay-woocommerce/wiki/Razorpay-Woocommerce-Webhooks">Razorpay webhooks</a>',
+            'Description' => 'Enable Razorpay Webhook <a href="https://dashboard.razorpay.com/#/app/webhooks">here</a> with the URL listed below. <br/><br><span>'.$webhookUrl.'</span><br/>',
         ),
         'webhookSecret' => array(
             'FriendlyName' => 'Webhook Secret',

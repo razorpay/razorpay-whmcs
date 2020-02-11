@@ -80,6 +80,9 @@ if ($enabled === 'on' and
             );
 
             logTransaction($gatewayParams["name"], $log, "Unsuccessful-".$e->getMessage());
+
+            header('HTTP/1.1 401 Unauthorized', true, 401);
+
             return;
         }
 
