@@ -124,8 +124,9 @@ function orderPaid(array $data, $gatewayParams)
 
     $order = localAPI($command, $postData);
 
+    // If order detail not found then ignore.
     // If it is already marked as paid or failed ignore the event
-    if ($order['orders']['order'][0]['paymentstatus'] === 'Paid')
+    if($order['totalresults'] === 0 or $order['orders']['order'][0]['paymentstatus'] === 'Paid')
     {
         return;
     }
