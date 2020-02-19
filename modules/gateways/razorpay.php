@@ -41,7 +41,7 @@ function razorpay_config()
     // Fetch gateway configuration parameters.
     $gatewayParams = getGatewayVariables($gatewayModuleName);
 
-    $webhookUrl = $gatewayParams['systemurl'].'modules/gateways/callback/razorpay-webhook.php';
+    $webhookUrl = $gatewayParams['systemurl'].'modules/gateways/razorpay/razorpay-webhook.php';
 
     return array(
         // the friendly display name for a payment gateway should be
@@ -172,7 +172,7 @@ function razorpay_link($params)
     // System Parameters
     $whmcsVersion = $params['whmcsVersion'];
     $razorpayWHMCSVersion = RAZORPAY_WHMCS_VERSION;
-    $callbackUrl = $params['systemurl'] . '/modules/gateways/callback/razorpay.php';
+    $callbackUrl = $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php';
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
 
     $razorpayOrderId = createRazorpayOrderId($params);
