@@ -36,12 +36,9 @@ function razorpay_MetaData()
  */
 function razorpay_config()
 {
-    $gatewayModuleName = 'razorpay';
+    global $CONFIG;
 
-    // Fetch gateway configuration parameters.
-    $gatewayParams = getGatewayVariables($gatewayModuleName);
-
-    $webhookUrl = $gatewayParams['systemurl'].'modules/gateways/razorpay/razorpay-webhook.php';
+    $webhookUrl = $CONFIG['SystemURL'].'/modules/gateways/razorpay/razorpay-webhook.php';
 
     return array(
         // the friendly display name for a payment gateway should be
