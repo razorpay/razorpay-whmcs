@@ -183,6 +183,7 @@ function razorpay_link($params)
         data-currency       = "$currencyCode"
         data-order_id       = "$razorpayOrderId"
         data-description    = "Inv#$invoiceId"
+        data-callback_url   = "$callbackUrl"
 
         data-prefill.name   = "$name"
         data-prefill.email  = "$email"
