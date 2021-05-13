@@ -115,27 +115,34 @@ function orderPaid(array $data, $gatewayParams)
     // Order entity should be sent as part of the webhook payload
     //
     $orderId = $data['payload']['order']['entity']['notes']['whmcs_order_id'];
+    $razorpayPaymentId = $data['payload']['payment']['entity']['id'];
+
+    // Validate Callback Invoice ID.
+    $merchant_order_id = checkCbInvoiceID($orderId, $gatewayParams['name']);
+    
+    // Check Callback Transaction ID.
+    checkCbTransID($razorpayPaymentId);
+
+    $orderTableId = mysql_fetch_assoc(select_query('tblorders', 'id', array("invoiceid"=>$orderId)));
 
     $command = 'GetOrders';
 
     $postData = array(
-        'id' => $orderId,
+        'id' => $orderTableId['id'],
     );
 
     $order = localAPI($command, $postData);
 
     // If order detail not found then ignore.
     // If it is already marked as paid or failed ignore the event
-    if($order['totalresults'] === 0 or $order['orders']['order'][0]['paymentstatus'] === 'Paid')
+    if($order['totalresults'] == 0 or $order['orders']['order'][0]['paymentstatus'] === 'Paid')
     {
         return;
     }
 
     $success = false;
     $error = "";
-    $errorMessage = 'The payment has failed.';
-
-    $razorpayPaymentId = $data['payload']['payment']['entity']['id'];
+    $error = 'The payment has failed.';
 
     $amount = getOrderAmountAsInteger($order);
 
@@ -148,24 +155,27 @@ function orderPaid(array $data, $gatewayParams)
         $error = 'WHMCS_ERROR: Payment to Razorpay Failed. Amount mismatch.';
     }
 
-	$log = [
-		'merchant_order_id'   => $orderId,
-		'razorpay_payment_id' => $razorpayPaymentId
-	];
+    $log = [
+        'merchant_order_id'   => $orderId,
+        'razorpay_payment_id' => $razorpayPaymentId,
+        'webhook' => true
+    ];
 
     if ($success === true)
-	{
-	    # Successful
-	    # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
-	    addInvoicePayment($orderId, $razorpayPaymentId, $amount, 0, $gatewayParams["name"]);
-	    logTransaction($gatewayParams["name"], $log, "Successful"); # Save to Gateway Log: name, data array, status
-	}
-	else
-	{
-	    # Unsuccessful
-	    # Save to Gateway Log: name, data array, status
-	    logTransaction($gatewayParams["name"], $log, "Unsuccessful-".$error . ". Please check razorpay dashboard for Payment id: ".$razorpayPaymentId);
-	}
+    {
+        # Successful
+        # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
+        $orderAmount=$order['orders']['order'][0]['amount'];
+        
+        addInvoicePayment($orderId, $razorpayPaymentId, $orderAmount, 0, $gatewayParams["name"]);
+        logTransaction($gatewayParams["name"], $log, "Successful"); # Save to Gateway Log: name, data array, status
+    }
+    else
+    {
+        # Unsuccessful
+        # Save to Gateway Log: name, data array, status
+        logTransaction($gatewayParams["name"], $log, "Unsuccessful-".$error . ". Please check razorpay dashboard for Payment id: ".$razorpayPaymentId);
+    }
 
     // Graceful exit since payment is now processed.
     exit;

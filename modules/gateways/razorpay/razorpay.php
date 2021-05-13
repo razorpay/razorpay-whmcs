@@ -35,14 +35,19 @@ $razorpay_payment_id = $_POST["razorpay_payment_id"];
 // Validate Callback Invoice ID.
 $merchant_order_id = checkCbInvoiceID($merchant_order_id, $gatewayParams['name']);
 
-// Check Callback Transaction ID.
-checkCbTransID($razorpay_payment_id);
-
 /**
 * Fetch amount to verify transaction
 */
 # Fetch invoice to get the amount and userid
-$result = mysql_fetch_assoc(select_query('tblinvoices', 'total', array("id"=>$merchant_order_id)));
+$result = mysql_fetch_assoc(select_query('tblinvoices', '*', array("id"=>$merchant_order_id)));
+
+#check whether order is already paid or not, if paid then redirect to complete page
+if($result['status'] === 'Paid')
+{
+    header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id);
+    
+    exit;
+}
 
 $amount = $result['total'];
 
