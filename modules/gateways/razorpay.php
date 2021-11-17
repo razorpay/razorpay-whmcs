@@ -174,7 +174,6 @@ function razorpay_link($params)
 
     $razorpayOrderId = createRazorpayOrderId($params);
 
-    
     return <<<EOT
 <form name="razorpay-form" id="razorpay-form" action="$callbackUrl" method="POST">
     <input type="hidden" name="merchant_order_id" id="merchant_order_id" value="$invoiceId"/>
