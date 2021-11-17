@@ -169,9 +169,12 @@ function razorpay_link($params)
     // System Parameters
     $whmcsVersion = $params['whmcsVersion'];
     $razorpayWHMCSVersion = RAZORPAY_WHMCS_VERSION;
-    $callbackUrl = $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php';
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
-
+    if(strrev($params['systemurl'])[0]==='/') {
+        $callbackUrl = $params['systemurl'] . 'modules/gateways/razorpay/razorpay.php';
+    }else{
+        $callbackUrl = $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php';
+    }
     $razorpayOrderId = createRazorpayOrderId($params);
 
     return <<<EOT
