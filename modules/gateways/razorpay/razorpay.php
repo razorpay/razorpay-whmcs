@@ -44,7 +44,7 @@ $result = mysql_fetch_assoc(select_query('tblinvoices', '*', array("id"=>$mercha
 #check whether order is already paid or not, if paid then redirect to complete page
 if($result['status'] === 'Paid')
 {
-    header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id);
+    header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id); // nosemgrep : php.lang.security.non-literal-header.non-literal-header
     
     exit;
 }
@@ -72,7 +72,7 @@ catch (Errors\SignatureVerificationError $e)
     logTransaction($gatewayParams["name"], $_POST, "Unsuccessful-".$error . ". Please check razorpay dashboard for Payment id: ".$_POST['razorpay_payment_id']);
 }
 
-header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id);
+header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id); // nosemgrep : php.lang.security.non-literal-header.non-literal-header
 
 /**
 * @codeCoverageIgnore
