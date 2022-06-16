@@ -1,5 +1,6 @@
 name: SecurityChecks
 on:
+  workflow_dispatch:
   pull_request: {}
   push:
     branches: ["master"]
@@ -17,7 +18,7 @@ jobs:
           publishDeployment: 339
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+  
   workflow_status:
     runs-on: [ ubuntu-latest ]                               # nosemgrep : semgrep.dev/s/swati31196:github_provided_runner
     name: Update Status Check
@@ -48,4 +49,4 @@ jobs:
           curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
           -d '{ "state" : "success" , "context" : "github/security-status-check" , "description" : "github/security-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
           https://api.github.com/repos/${{ github.repository }}/statuses/${{ env.githubCommit }}
-          exit 0
+          exit 0ˀ
