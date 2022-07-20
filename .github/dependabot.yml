@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: composer
+    directory: "modules/gateways/razorpay/razorpay-sdk/"
+    schedule:
+      interval: daily
+      time: "04:00"
+      timezone: Asia/Calcutta
