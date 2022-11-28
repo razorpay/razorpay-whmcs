@@ -47,6 +47,12 @@ function razorpay_config()
             'Type' => 'System',
             'Value' => 'Razorpay',
         ),
+        'signUp' => array(
+            'FriendlyName' => '',
+            'Type' => 'comment',
+            'Size' => '50',
+            'Description' => '<a href="https://easy.razorpay.com/onboarding?recommended_product=payment_gateway&source=whmcs" target="_blank">Signup</a> for a Razorpay account OR <a href="https://dashboard.razorpay.com/signin?screen=sign_in&source=whmcs" target="_blank">Login</a> if you have an existing account.',
+        ),
         'keyId' => array(
             'FriendlyName' => 'Key Id',
             'Type' => 'text',
