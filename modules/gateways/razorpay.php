@@ -194,6 +194,7 @@ function razorpay_link($params)
         data-_.integration                = "whmcs"
         data-_.integration_version        = "$razorpayWHMCSVersion"
         data-_.integration_parent_version = "$whmcsVersion"
+        data-_.integration_type           = "plugin"
     ></script>
 </form>
 EOT;
