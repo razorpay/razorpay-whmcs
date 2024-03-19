@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__.'/razorpay/razorpay-sdk/Razorpay.php';
+require_once __DIR__.'/razorpay/rzpordermapping.php';
+
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
@@ -39,6 +41,8 @@ function razorpay_config()
     global $CONFIG;
 
     $webhookUrl = $CONFIG['SystemURL'].'/modules/gateways/razorpay/razorpay-webhook.php';
+    $rzpOrderMapping = new RZPOrderMapping();
+    $rzpOrderMapping->createTable();
 
     return array(
         // the friendly display name for a payment gateway should be
@@ -145,6 +149,9 @@ function createRazorpayOrderId(array $params)
 
     $_SESSION[$sessionKey] = $razorpayOrderId;
 
+    $rzpOrderMapping = new RZPOrderMapping();
+    $rzpOrderMapping->insertOrder($params['invoiceid'], $razorpayOrderId);
+
     return $razorpayOrderId;
 }
 
@@ -176,7 +183,7 @@ function razorpay_link($params)
     $whmcsVersion = $params['whmcsVersion'];
     $razorpayWHMCSVersion = RAZORPAY_WHMCS_VERSION;
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
-    $callbackUrl = (substr($params['systemurl'], -1) === '/') ? $params['systemurl'] . 'modules/gateways/razorpay/razorpay.php' : $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php';
+    $callbackUrl = (substr($params['systemurl'], -1) === '/') ? $params['systemurl'] . 'modules/gateways/razorpay/razorpay.php?merchant_order_id='.$invoiceId : $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php?merchant_order_id='.$invoiceId;
 
     $razorpayOrderId = createRazorpayOrderId($params);
 
