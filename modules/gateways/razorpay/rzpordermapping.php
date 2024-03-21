@@ -1,30 +1,66 @@
 <?php
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class RZPOrderMapping
 {
+    private $name;
+
+    function __construct($name){
+        $this->name = $name;
+    }
     function createTable()
     {
-        $sql = "CREATE TABLE IF NOT EXISTS `tblrzpordermapping` (
-                    `id` int unsigned NOT NULL AUTO_INCREMENT,
-                    `merchant_order_id` varchar(30) NOT NULL,
-                    `razorpay_order_id` varchar(50) NOT NULL,
-                     PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;";
-        $result = mysql_query($sql);
+        if (!Capsule::schema()->hasTable('tblrzpordermapping')) {
+            Capsule::schema()->create('tblrzpordermapping', function($table) {
+                $table->increments('id');
+                $table->string('merchant_order_id', 30);
+                $table->string('razorpay_order_id', 50);
+            });
+        }
     }
 
     function insertOrder($merchant_order_id, $razorpay_order_id)
     {
-        $insert_sql = "INSERT INTO `tblrzpordermapping` (`merchant_order_id`, `razorpay_order_id`) VALUES ('".$merchant_order_id."', '".$razorpay_order_id."');";
-        $result = mysql_query($insert_sql);
+        if(($this->validateMerchantOrderID($merchant_order_id) === false)
+        or ($this->validateRazorpayOrderID($razorpay_order_id) === false))
+        {
+            $error = array("merchant_order_id"=>$merchant_order_id,
+                "razorpay_order_id"=>$razorpay_order_id);
+            logTransaction($this->name, $error, "Validation Failure");
+            return;
+        }
+        $insert_array = [
+            "merchant_order_id" => $merchant_order_id,
+            "razorpay_order_id" => $razorpay_order_id
+        ];
+        Capsule::table('tblrzpordermapping')
+            ->insert($insert_array);
     }
 
     function getRazorpayOrderID($merchant_order_id)
     {
-        $sql = "SELECT `razorpay_order_id` FROM `tblrzpordermapping` WHERE merchant_order_id='".$merchant_order_id."' order by `id` desc limit 1;";
-        $result = mysql_query($sql);
-        $result = mysql_fetch_row($result);
-        return $result[0];
+        if(($this->validateMerchantOrderID($merchant_order_id)) === false){
+            $error = array("merchant_order_id"=>$merchant_order_id);
+            logTransaction($this->name, $error, "Validation Failure");
+            return;
+        }
+        $result = Capsule::table('tblrzpordermapping')
+            ->select("razorpay_order_id")
+            ->where("merchant_order_id", "=", $merchant_order_id)
+            ->orderBy('id', 'desc')
+            ->first();
+        return $result->razorpay_order_id;
+    }
+
+    function validateMerchantOrderID($merchant_order_id){
+        $pattern = '(^[0-9]+$)';
+        return (preg_match($pattern, (string) $merchant_order_id) === 1) ? true : false;
+    }
+
+    function validateRazorpayOrderID($razorpay_order_id){
+        $pattern = '(^order_[a-zA-Z0-9]+$)';
+        return ((preg_match($pattern, (string) $razorpay_order_id) === 1)
+        and (strlen(substr($razorpay_order_id, 6)) === 14)) ? true : false;
     }
 }
 ?>
