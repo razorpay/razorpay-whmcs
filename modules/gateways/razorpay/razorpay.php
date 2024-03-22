@@ -109,6 +109,7 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
     }
     else
     {
+        logTransaction($gatewayParams["name"], $_SESSION[$sessionKey], "Session not found");
         try
         {
             if(isset($order_no) === true)
