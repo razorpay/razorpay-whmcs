@@ -157,11 +157,13 @@ function createRazorpayOrderId(array $params)
     $_SESSION[$sessionKey] = $razorpayOrderId;
 
     $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()["DisplayName"]);
-    if ((isset($params['invoiceid']) === false)
-        or (isset($razorpayOrderId) === false))
+    if ((isset($params['invoiceid']) === false) or
+        (isset($razorpayOrderId) === false))
     {
-        $error = array("invoice_id"=>$params['invoiceid'],
-            "razorpay_order_id"=>$razorpayOrderId);
+        $error = array(
+            "invoice_id"=>$params['invoiceid'],
+            "razorpay_order_id"=>$razorpayOrderId
+        );
         logTransaction(razorpay_MetaData()["DisplayName"], $error, "Validation Failure");
         return;
     }

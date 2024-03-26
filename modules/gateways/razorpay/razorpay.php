@@ -115,7 +115,7 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
             if(isset($order_no) === true)
             {
                 $rzpOrderMapping = new RZPOrderMapping($gatewayParams["name"]);
-                $razorpayOrderId= $rzpOrderMapping->getRazorpayOrderID($order_no);
+                $razorpayOrderId = $rzpOrderMapping->getRazorpayOrderID($order_no);
             }
             else
             {
