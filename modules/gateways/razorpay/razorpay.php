@@ -109,10 +109,10 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
     }
     else
     {
-        logTransaction($gatewayParams["name"], $_SESSION[$sessionKey], "Session not found");
+        logTransaction($gatewayParams["name"], $sessionKey, "Session not found");
         try
         {
-            if(isset($order_no) === true)
+            if (isset($order_no) === true)
             {
                 $rzpOrderMapping = new RZPOrderMapping($gatewayParams["name"]);
                 $razorpayOrderId = $rzpOrderMapping->getRazorpayOrderID($order_no);

@@ -161,8 +161,8 @@ function createRazorpayOrderId(array $params)
         (isset($razorpayOrderId) === false))
     {
         $error = array(
-            "invoice_id"=>$params['invoiceid'],
-            "razorpay_order_id"=>$razorpayOrderId
+            "invoice_id" => $params['invoiceid'],
+            "razorpay_order_id" => $razorpayOrderId
         );
         logTransaction(razorpay_MetaData()["DisplayName"], $error, "Validation Failure");
         return;
