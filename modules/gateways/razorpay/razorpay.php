@@ -31,8 +31,8 @@ if (!$gatewayParams['type'])
 }
 
 // Retrieve data returned in payment gateway callback
-$merchant_order_id   = (isset($_POST["merchant_order_id"]) === true) ? $_POST["merchant_order_id"] : $_GET["merchant_order_id"];
-$razorpay_payment_id = $_POST["razorpay_payment_id"];
+$merchant_order_id   = (isset($_POST['merchant_order_id']) === true) ? $_POST["merchant_order_id"] : $_GET["merchant_order_id"];
+$razorpay_payment_id = $_POST['razorpay_payment_id'];
 
 // Validate Callback Invoice ID.
 $merchant_order_id = checkCbInvoiceID($merchant_order_id, $gatewayParams['name']);
@@ -109,7 +109,7 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
     }
     else
     {
-        logTransaction($gatewayParams["name"], $sessionKey, "Session not found");
+        logTransaction($gatewayParams["name"], $sessionKey, 'Session not found');
         try
         {
             if (isset($order_no) === true)
@@ -119,13 +119,13 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
             }
             else
             {
-                $error = "merchant_order_id is not set";
-                logTransaction($gatewayParams["name"], $error, "Validation Failure");
+                $error = 'merchant_order_id is not set';
+                logTransaction($gatewayParams["name"], $error, 'Validation Failure');
             }
         }
         catch (Exception $e)
         {
-            logTransaction($gatewayParams["name"], $e->getMessage(), "Unsuccessful - Fetch Order");
+            logTransaction($gatewayParams["name"], $e->getMessage(), 'Unsuccessful - Fetch Order');
         }
     }
     $attributes[RAZORPAY_ORDER_ID] = $razorpayOrderId;

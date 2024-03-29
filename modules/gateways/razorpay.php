@@ -41,14 +41,14 @@ function razorpay_config()
     global $CONFIG;
 
     $webhookUrl = $CONFIG['SystemURL'].'/modules/gateways/razorpay/razorpay-webhook.php';
-    $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()["DisplayName"]);
+    $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()['DisplayName']);
     try
     {
         $rzpOrderMapping->createTable();
     }
     catch (Exception $e)
     {
-        logTransaction(razorpay_MetaData()["DisplayName"], $e->getMessage(), "Unsuccessful - Create Table");
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), 'Unsuccessful - Create Table');
     }
 
     return array(
@@ -156,15 +156,15 @@ function createRazorpayOrderId(array $params)
 
     $_SESSION[$sessionKey] = $razorpayOrderId;
 
-    $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()["DisplayName"]);
+    $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()['DisplayName']);
     if ((isset($params['invoiceid']) === false) or
         (isset($razorpayOrderId) === false))
     {
-        $error = array(
+        $error = [
             "invoice_id" => $params['invoiceid'],
             "razorpay_order_id" => $razorpayOrderId
-        );
-        logTransaction(razorpay_MetaData()["DisplayName"], $error, "Validation Failure");
+        ];
+        logTransaction(razorpay_MetaData()['DisplayName'], $error, 'Validation Failure');
         return;
     }
     try
@@ -173,7 +173,7 @@ function createRazorpayOrderId(array $params)
     }
     catch (Exception $e)
     {
-        logTransaction(razorpay_MetaData()["DisplayName"], $e->getMessage(), "Unsuccessful - Insert Order");
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), 'Unsuccessful - Insert Order');
     }
 
     return $razorpayOrderId;

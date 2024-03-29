@@ -16,42 +16,50 @@ class RZPOrderMapping
         {
             Capsule::schema()->create('tblrzpordermapping', function($table) {
                 $table->increments('id');
-                $table->string('merchant_order_id', 30);
-                $table->string('razorpay_order_id', 50);
+                $table->string('merchant_order_id', 20);
+                $table->string('razorpay_order_id', 20);
             });
         }
     }
 
     function insertOrder($merchant_order_id, $razorpay_order_id)
     {
+        $merchant_order_id = stripcslashes($merchant_order_id);
+        $razorpay_order_id = stripcslashes($razorpay_order_id);
         if (($this->validateMerchantOrderID($merchant_order_id) === false) or
             ($this->validateRazorpayOrderID($razorpay_order_id) === false))
         {
-            $error = array(
+            $error = [
                 "merchant_order_id" => $merchant_order_id,
                 "razorpay_order_id" => $razorpay_order_id
-            );
-            logTransaction($this->name, $error, "Validation Failure");
+            ];
+
+            logTransaction($this->name, $error, 'Validation Failure');
             return;
         }
         $insert_array = [
             "merchant_order_id" => $merchant_order_id,
             "razorpay_order_id" => $razorpay_order_id
         ];
+
         Capsule::table('tblrzpordermapping')->insert($insert_array);
     }
 
     function getRazorpayOrderID($merchant_order_id)
     {
+        $merchant_order_id = stripcslashes($merchant_order_id);
         if (($this->validateMerchantOrderID($merchant_order_id)) === false)
         {
-            $error = array("merchant_order_id"=>$merchant_order_id);
-            logTransaction($this->name, $error, "Validation Failure");
+            $error = [
+                "merchant_order_id" => $merchant_order_id
+            ];
+
+            logTransaction($this->name, $error, 'Validation Failure');
             return;
         }
         $result = Capsule::table('tblrzpordermapping')
-            ->select("razorpay_order_id")
-            ->where("merchant_order_id", "=", $merchant_order_id)
+            ->select('razorpay_order_id')
+            ->where('merchant_order_id', '=', $merchant_order_id)
             ->orderBy('id', 'desc')
             ->first();
 
