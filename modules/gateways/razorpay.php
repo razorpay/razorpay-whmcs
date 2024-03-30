@@ -157,6 +157,7 @@ function createRazorpayOrderId(array $params)
     $_SESSION[$sessionKey] = $razorpayOrderId;
 
     $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()['DisplayName']);
+
     if ((isset($params['invoiceid']) === false) or
         (isset($razorpayOrderId) === false))
     {
@@ -164,16 +165,17 @@ function createRazorpayOrderId(array $params)
             "invoice_id" => $params['invoiceid'],
             "razorpay_order_id" => $razorpayOrderId
         ];
-        logTransaction(razorpay_MetaData()['DisplayName'], $error, 'Validation Failure');
+        logTransaction(razorpay_MetaData()['DisplayName'], $error, "Validation Failure");
         return;
     }
+
     try
     {
         $rzpOrderMapping->insertOrder($params['invoiceid'], $razorpayOrderId);
     }
     catch (Exception $e)
     {
-        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), 'Unsuccessful - Insert Order');
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), "Unsuccessful - Insert Order");
     }
 
     return $razorpayOrderId;

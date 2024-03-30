@@ -26,6 +26,7 @@ class RZPOrderMapping
     {
         $merchant_order_id = stripcslashes($merchant_order_id);
         $razorpay_order_id = stripcslashes($razorpay_order_id);
+
         if (($this->validateMerchantOrderID($merchant_order_id) === false) or
             ($this->validateRazorpayOrderID($razorpay_order_id) === false))
         {
@@ -48,6 +49,7 @@ class RZPOrderMapping
     function getRazorpayOrderID($merchant_order_id)
     {
         $merchant_order_id = stripcslashes($merchant_order_id);
+
         if (($this->validateMerchantOrderID($merchant_order_id)) === false)
         {
             $error = [

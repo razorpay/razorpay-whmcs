@@ -108,7 +108,7 @@ function orderPaid(array $data, $gatewayParams)
     // We don't process subscription/invoice payments here
     if (isset($data['payload']['payment']['entity']['invoice_id']) === true)
     {
-        logTransaction($gatewayParams["name"], "returning order.paid webhook", "Invoice ID exists");
+        logTransaction($gatewayParams['name'], "returning order.paid webhook", "Invoice ID exists");
         return;
     }
 
@@ -138,7 +138,7 @@ function orderPaid(array $data, $gatewayParams)
     // If it is already marked as paid or failed ignore the event
     if($order['totalresults'] == 0 or $order['orders']['order'][0]['paymentstatus'] === 'Paid')
     {
-        logTransaction($gatewayParams["name"], "order detail not found or already paid or failed", "INFO");
+        logTransaction($gatewayParams['name'], "order detail not found or already paid or failed", "INFO");
         return;
     }
 

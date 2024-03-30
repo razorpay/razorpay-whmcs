@@ -109,23 +109,23 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
     }
     else
     {
-        logTransaction($gatewayParams["name"], $sessionKey, 'Session not found');
+        logTransaction($gatewayParams['name'], $sessionKey, "Session not found");
         try
         {
             if (isset($order_no) === true)
             {
-                $rzpOrderMapping = new RZPOrderMapping($gatewayParams["name"]);
+                $rzpOrderMapping = new RZPOrderMapping($gatewayParams['name']);
                 $razorpayOrderId = $rzpOrderMapping->getRazorpayOrderID($order_no);
             }
             else
             {
-                $error = 'merchant_order_id is not set';
-                logTransaction($gatewayParams["name"], $error, 'Validation Failure');
+                $error = "merchant_order_id is not set";
+                logTransaction($gatewayParams['name'], $error, "Validation Failure");
             }
         }
         catch (Exception $e)
         {
-            logTransaction($gatewayParams["name"], $e->getMessage(), 'Unsuccessful - Fetch Order');
+            logTransaction($gatewayParams['name'], $e->getMessage(), "Unsuccessful - Fetch Order");
         }
     }
     $attributes[RAZORPAY_ORDER_ID] = $razorpayOrderId;
