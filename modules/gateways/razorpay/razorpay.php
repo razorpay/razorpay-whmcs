@@ -14,7 +14,6 @@ require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 require_once __DIR__ . '/razorpay-sdk/Razorpay.php';
 require_once __DIR__ . '/rzpordermapping.php';
 
-
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
 
@@ -31,7 +30,7 @@ if (!$gatewayParams['type'])
 }
 
 // Retrieve data returned in payment gateway callback
-$merchant_order_id   = (isset($_POST['merchant_order_id']) === true) ? $_POST["merchant_order_id"] : $_GET["merchant_order_id"];
+$merchant_order_id   = (isset($_POST['merchant_order_id']) === true) ? $_POST['merchant_order_id'] : $_GET['merchant_order_id'];
 $razorpay_payment_id = $_POST['razorpay_payment_id'];
 
 // Validate Callback Invoice ID.
@@ -101,8 +100,8 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
     );
 
     $sessionKey = getOrderSessionKey($order_no);
-
     $razorpayOrderId = "";
+
     if (isset($_SESSION[$sessionKey]) === true)
     {
         $razorpayOrderId = $_SESSION[$sessionKey];
@@ -128,6 +127,7 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
             logTransaction($gatewayParams['name'], $e->getMessage(), "Unsuccessful - Fetch Order");
         }
     }
+
     $attributes[RAZORPAY_ORDER_ID] = $razorpayOrderId;
     $api->utility->verifyPaymentSignature($attributes);
 }

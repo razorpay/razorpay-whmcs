@@ -42,13 +42,14 @@ function razorpay_config()
 
     $webhookUrl = $CONFIG['SystemURL'].'/modules/gateways/razorpay/razorpay-webhook.php';
     $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()['DisplayName']);
+
     try
     {
         $rzpOrderMapping->createTable();
     }
     catch (Exception $e)
     {
-        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), 'Unsuccessful - Create Table');
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), "Unsuccessful - Create Table");
     }
 
     return array(
