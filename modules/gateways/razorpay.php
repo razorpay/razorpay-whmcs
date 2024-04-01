@@ -212,7 +212,25 @@ function razorpay_link($params)
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
     $callbackUrl = (substr($params['systemurl'], -1) === '/') ? $params['systemurl'] . 'modules/gateways/razorpay/razorpay.php?merchant_order_id=' . $invoiceId : $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php?merchant_order_id=' . $invoiceId;
 
-    $razorpayOrderId = createRazorpayOrderId($params);
+    $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()['DisplayName']);
+
+    try
+    {
+        $existingRazorpayOrderId = $rzpOrderMapping->getRazorpayOrderID($invoiceId);
+    }
+    catch (Exception $e)
+    {
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), "Unsuccessful - Fetch Order");
+    }
+
+    if (isset($existingRazorpayOrderId) === false)
+    {
+        $razorpayOrderId = createRazorpayOrderId($params);
+    }
+    else
+    {
+        $razorpayOrderId = $existingRazorpayOrderId;
+    }
 
     return <<<EOT
 <form name="razorpay-form" id="razorpay-form" action="$callbackUrl" method="POST">
