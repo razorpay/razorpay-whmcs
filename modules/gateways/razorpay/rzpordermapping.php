@@ -37,6 +37,7 @@ class RZPOrderMapping
             ];
 
             logTransaction($this->name, $error, 'Validation Failure');
+
             return;
         }
         $insert_array = [
@@ -58,6 +59,7 @@ class RZPOrderMapping
             ];
 
             logTransaction($this->name, $error, 'Validation Failure');
+
             return;
         }
         $result = Capsule::table('tblrzpordermapping')
