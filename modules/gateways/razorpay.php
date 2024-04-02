@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__.'/razorpay/razorpay-sdk/Razorpay.php';
+require_once __DIR__.'/razorpay/rzpordermapping.php';
+
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
@@ -39,6 +41,16 @@ function razorpay_config()
     global $CONFIG;
 
     $webhookUrl = $CONFIG['SystemURL'].'/modules/gateways/razorpay/razorpay-webhook.php';
+    $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()['DisplayName']);
+
+    try
+    {
+        $rzpOrderMapping->createTable();
+    }
+    catch (Exception $e)
+    {
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), "Unsuccessful - Create Table");
+    }
 
     return array(
         // the friendly display name for a payment gateway should be
@@ -145,6 +157,28 @@ function createRazorpayOrderId(array $params)
 
     $_SESSION[$sessionKey] = $razorpayOrderId;
 
+    $rzpOrderMapping = new RZPOrderMapping(razorpay_MetaData()['DisplayName']);
+
+    if ((isset($params['invoiceid']) === false) or
+        (isset($razorpayOrderId) === false))
+    {
+        $error = [
+            "invoice_id" => $params['invoiceid'],
+            "razorpay_order_id" => $razorpayOrderId
+        ];
+        logTransaction(razorpay_MetaData()['DisplayName'], $error, "Validation Failure");
+        return;
+    }
+
+    try
+    {
+        $rzpOrderMapping->insertOrder($params['invoiceid'], $razorpayOrderId);
+    }
+    catch (Exception $e)
+    {
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), "Unsuccessful - Insert Order");
+    }
+
     return $razorpayOrderId;
 }
 
@@ -176,7 +210,7 @@ function razorpay_link($params)
     $whmcsVersion = $params['whmcsVersion'];
     $razorpayWHMCSVersion = RAZORPAY_WHMCS_VERSION;
     $checkoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
-    $callbackUrl = (substr($params['systemurl'], -1) === '/') ? $params['systemurl'] . 'modules/gateways/razorpay/razorpay.php' : $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php';
+    $callbackUrl = (substr($params['systemurl'], -1) === '/') ? $params['systemurl'] . 'modules/gateways/razorpay/razorpay.php?merchant_order_id=' . $invoiceId : $params['systemurl'] . '/modules/gateways/razorpay/razorpay.php?merchant_order_id=' . $invoiceId;
 
     $razorpayOrderId = createRazorpayOrderId($params);
 

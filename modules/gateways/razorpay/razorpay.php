@@ -12,6 +12,7 @@ require_once __DIR__ . '/../../../init.php';
 require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 require_once __DIR__ . '/razorpay-sdk/Razorpay.php';
+require_once __DIR__ . '/rzpordermapping.php';
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
@@ -29,8 +30,8 @@ if (!$gatewayParams['type'])
 }
 
 // Retrieve data returned in payment gateway callback
-$merchant_order_id   = $_POST["merchant_order_id"];
-$razorpay_payment_id = $_POST["razorpay_payment_id"];
+$merchant_order_id   = (isset($_POST['merchant_order_id']) === true) ? $_POST['merchant_order_id'] : $_GET['merchant_order_id'];
+$razorpay_payment_id = $_POST['razorpay_payment_id'];
 
 // Validate Callback Invoice ID.
 $merchant_order_id = checkCbInvoiceID($merchant_order_id, $gatewayParams['name']);
@@ -99,8 +100,34 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
     );
 
     $sessionKey = getOrderSessionKey($order_no);
+    $razorpayOrderId = "";
 
-    $attributes[RAZORPAY_ORDER_ID] = $_SESSION[$sessionKey];
+    if (isset($_SESSION[$sessionKey]) === true)
+    {
+        $razorpayOrderId = $_SESSION[$sessionKey];
+    }
+    else
+    {
+        logTransaction($gatewayParams['name'], $sessionKey, "Session not found");
+        try
+        {
+            if (isset($order_no) === true)
+            {
+                $rzpOrderMapping = new RZPOrderMapping($gatewayParams['name']);
+                $razorpayOrderId = $rzpOrderMapping->getRazorpayOrderID($order_no);
+            }
+            else
+            {
+                $error = "merchant_order_id is not set";
+                logTransaction($gatewayParams['name'], $error, "Validation Failure");
+            }
+        }
+        catch (Exception $e)
+        {
+            logTransaction($gatewayParams['name'], $e->getMessage(), "Unsuccessful - Fetch Order");
+        }
+    }
 
+    $attributes[RAZORPAY_ORDER_ID] = $razorpayOrderId;
     $api->utility->verifyPaymentSignature($attributes);
 }
