@@ -4,6 +4,54 @@ Changelog for Razorpay-PHP SDK. Follows [keepachangelog.com](https://keepachange
 
 ## Unreleased
 
+## [2.9.0] - 2023-12-18
+feat: Added new API endpoints
+
+* Added support for `addBankAccount`, `deleteBankAccount`, `requestEligibilityCheck` & `fetchEligibility` on customer
+* Added support for `uploadAccountDoc` & `fetchAccountDoc` on account
+* Added support for [Dispute](https://razorpay.com/docs/api/disputes/)
+* Added support for [Document](https://razorpay.com/docs/api/documents/)
+* Added support for fetch all IINs Supporting native otps & fetch all IINs with business sub-type using `all`
+* Added support for `viewRtoReview` & `editFulfillment` on order
+* Added support for fetch a payment (emi/ offer/ card/ upi) using `expandedDetails` on payments
+* Added support for `uploadStakeholderDoc` & `fetchStakeholderDoc` on stakeholder 
+
+
+## [2.8.7] - 2023-09-11
+[#357](https://github.com/razorpay/razorpay-php/pull/357) [`b29754f`](https://github.com/razorpay/razorpay-php/commit/b29754f8892e0c2035055cf73fd7ab132de18e52) Chore: Changed Content-Type `application/json` for `order create` API from default `application/x-www-form-urlencoded`
+
+
+## [2.8.6] - 2023-06-16
+[#348](https://github.com/razorpay/razorpay-php/pull/348) [`68b2028`](https://github.com/razorpay/razorpay-php/commit/68b2028bafda49af970a098d6d11aa8e5a575d40) feat: Added new API endpoints
+
+* Added account onboarding API (create, fetch, edit, delete)
+* Added stakeholders API (create, fetch, fetchAll, edit)
+* Added product configuration API (requestProductConfiguration, fetch, edit, fetchTnc)
+* Added webhooks API (create, fetch, fetchAll, edit, delete)
+* Added token sharing API (create, fetch, delete, processPaymentOnAlternatePAorPG)
+
+## [2.8.5] - 2022-10-19
+
+### Added
+- Update [Request](https://github.com/WordPress/Requests/tree/v2.0.4) library to v2.0.4
+
+## [2.8.4] - 2022-06-28
+
+- New APIs for Third party validation (createUpi, validateVpa, fetchPaymentMethods)
+- Update documentation 
+
+## [2.8.3] - 2022-04-29
+
+- PHP v8.1 is officially supported
+- Update [Request](https://github.com/WordPress/Requests/tree/v2.0.0) library to v2.0
+- Improve documentation 
+- Add PHPUnit v9
+
+## [2.8.2] - 2022-03-08
+
+- Change name convention to standard in Unit test 
+- Removed test api key due to security concern from test cases
+
 ## [2.8.1] - 2021-11-08
 
 ### Added
@@ -208,3 +256,5 @@ Changelog for Razorpay-PHP SDK. Follows [keepachangelog.com](https://keepachange
 [2.4.0-beta]: https://github.com/razorpay/razorpay-php/compare/2.3.0...2.4.0-beta
 [2.5.0]: https://github.com/razorpay/razorpay-php/compare/2.4.0-beta...2.5.0
 [2.8.0]: https://github.com/razorpay/razorpay-php/compare/2.7.1...2.8.0
+[2.8.1]: https://github.com/razorpay/razorpay-php/compare/2.8.0...2.8.1
+[2.8.2]: https://github.com/razorpay/razorpay-php/compare/2.8.0...2.8.2
