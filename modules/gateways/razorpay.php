@@ -103,8 +103,8 @@ function razorpay_config()
 }
 
 /**
- * @codeCoverageIgnore
- */
+* @codeCoverageIgnore
+*/
 function getRazorpayApiInstance($params)
 {
     $key    = $params['keyId'];
