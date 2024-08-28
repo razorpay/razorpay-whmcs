@@ -182,6 +182,19 @@ function createRazorpayOrderId(array $params)
     return $razorpayOrderId;
 }
 
+function getExistingOrderDetails($params, $razorpayOrderId)
+{
+    try
+    {
+        $api = getRazorpayApiInstance($params);
+        return $api->order->fetch($razorpayOrderId);
+    }
+    catch (Exception $e)
+    {
+        logTransaction(razorpay_MetaData()['DisplayName'], $e->getMessage(), "Unsuccessful - Fetch existing order failed");
+    }
+
+}
 /**
  * Payment link.
  * Required by third party payment gateway modules only.
@@ -229,7 +242,17 @@ function razorpay_link($params)
     }
     else
     {
-        $razorpayOrderId = $existingRazorpayOrderId;
+        $existingOrder = getExistingOrderDetails($params, $existingRazorpayOrderId);
+
+        if (isset($existingOrder) === true and
+            ((int)$existingOrder['amount']) !== ((int)$amount))
+        {
+            $razorpayOrderId = createRazorpayOrderId($params);
+        }
+        else
+        {
+            $razorpayOrderId = $existingRazorpayOrderId;
+        }
     }
 
     return <<<EOT
