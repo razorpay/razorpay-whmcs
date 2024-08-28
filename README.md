@@ -37,6 +37,7 @@ Visit [https://razorpay.com](https://razorpay.com) for support requests or email
 This is licensed under the [MIT License][mit]
 
 [mit]: https://opensource.org/licenses/MIT
+[8]: https://github.com/razorpay/razorpay-whmcs/releases/tag/2.2.2
 [7]: https://github.com/razorpay/razorpay-whmcs/releases/tag/2.2.1
 [6]: https://github.com/razorpay/razorpay-whmcs/releases/tag/2.2.0
 [5]: https://github.com/razorpay/razorpay-whmcs/releases/tag/v1.0.3
