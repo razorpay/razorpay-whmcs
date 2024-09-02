@@ -1,13 +1,13 @@
 # razorpay-php
 
-[![Build Status](https://travis-ci.org/razorpay/razorpay-php.svg?branch=master)](https://travis-ci.org/razorpay/razorpay-php) [![Latest Stable Version](https://poser.pugx.org/razorpay/razorpay/v/stable.svg)](https://packagist.org/packages/razorpay/razorpay) [![License](https://poser.pugx.org/razorpay/razorpay/license.svg)](https://packagist.org/packages/razorpay/razorpay)
+[![Build Status](https://travis-ci.org/razorpay/razorpay-php.svg?branch=master)](https://travis-ci.org/razorpay/razorpay-php) [![Stable](https://img.shields.io/badge/stable-v2.8.0-blue.svg)](https://packagist.org/packages/razorpay/razorpay#2.8.0) [![License](https://poser.pugx.org/razorpay/razorpay/license.svg)](https://packagist.org/packages/razorpay/razorpay)
 
 Official PHP library for [Razorpay API](https://docs.razorpay.com/docs/payments).
 
 Read up here for getting started and understanding the payment flow with Razorpay: <https://docs.razorpay.com/docs/getting-started>
 
 ### Prerequisites
-- A minimum of PHP 5.3 is required
+- A minimum of PHP 7.3 upto 8.1
 
 
 ## Installation
@@ -52,19 +52,27 @@ The resources can be accessed via the `$api` object. All the methods invocations
     $api->payment->fetch($paymentId);
 ```
 ## Supported Resources
+- [Account](documents/account.md)
 - [Customer](documents/customer.md)
+- [Dispute](documents/dispute.md)
+- [Document](documents/document.md)
 - [Token](documents/token.md)
 - [Order](documents/order.md)
 - [Payments](documents/payment.md)
 - [Settlements](documents/settlement.md)
 - [Refunds](documents/refund.md)
+- [Fund](documents/fund.md)
 - [Invoice](documents/invoice.md)
+- [Iin](documents/Iin.md)
+- [Plan](documents/plan.md)
 - [Item](documents/item.md)
 - [Subscriptions](documents/subscription.md)
 - [Add-on](documents/addon.md)
 - [Payment Links](documents/paymentLink.md)
+- [Product Configuration](documents/productConfiguration.md)
 - [Smart Collect](documents/virtualaccount.md)
-- [Route](documents/transfer.md)
+- [Stakeholder](documents/stakeholder.md)
+- [Transfer](documents/transfer.md)
 - [QR Code](documents/qrcode.md)
 - [Emandate](documents/emandate.md)
 - [Cards](documents/card.md)
@@ -73,6 +81,8 @@ The resources can be accessed via the `$api` object. All the methods invocations
 - [Register Emandate and Charge First Payment Together](documents/registeremandate.md)
 - [Register NACH and Charge First Payment Together](documents/registernach.md)
 - [Payment Verification](documents/paymentVerfication.md)
+- [Webhook](documents/webhook.md)
+
 
 ## Development
 
