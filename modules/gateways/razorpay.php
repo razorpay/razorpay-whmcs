@@ -211,7 +211,7 @@ function razorpay_link($params)
     // Invoice Parameters
     $invoiceId = $params['invoiceid'];
     $description = $params["description"];
-    $amount = $params['amount'] * 100; // Required to be converted to Paisa.
+    $amount = (int) round($params['amount'] * 100); // Required to be converted to Paisa.
     $currencyCode = $params['currency'];
 
     // Client Parameters

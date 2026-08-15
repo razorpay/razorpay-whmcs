@@ -5,9 +5,11 @@ require_once __DIR__ . '/../../../init.php';
 require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 require_once __DIR__ . '/razorpay-sdk/Razorpay.php';
+require_once __DIR__ . '/rzpordermapping.php';
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 /**
  * Event constants
@@ -89,7 +91,7 @@ if ($enabled === 'on' and
         switch ($data['event'])
         {
             case ORDER_PAID:
-                return orderPaid($data, $gatewayParams);
+                return orderPaid($data, $gatewayParams, $gatewayModuleName);
 
             default:
                 return;
@@ -103,7 +105,7 @@ if ($enabled === 'on' and
  *
  * @param array $data
  */
-function orderPaid(array $data, $gatewayParams)
+function orderPaid(array $data, $gatewayParams, $gatewayModuleName)
 {
     // We don't process subscription/invoice payments here
     if (isset($data['payload']['payment']['entity']['invoice_id']) === true)
@@ -120,16 +122,22 @@ function orderPaid(array $data, $gatewayParams)
 
     // Validate Callback Invoice ID.
     $merchant_order_id = checkCbInvoiceID($orderId, $gatewayParams['name']);
-    
+
     // Check Callback Transaction ID.
     checkCbTransID($razorpayPaymentId);
 
-    $orderTableId = mysql_fetch_assoc(select_query('tblorders', 'id', array("invoiceid"=>$orderId)));
+    $orderTableRow = Capsule::table('tblorders')->select('id')->where('invoiceid', $orderId)->first();
+
+    if (isset($orderTableRow) === false)
+    {
+        logTransaction($gatewayParams['name'], "order not found for invoice ".$orderId, "INFO");
+        return;
+    }
 
     $command = 'GetOrders';
 
     $postData = array(
-        'id' => $orderTableId['id'],
+        'id' => $orderTableRow->id,
     );
 
     $order = localAPI($command, $postData);
@@ -169,7 +177,7 @@ function orderPaid(array $data, $gatewayParams)
         # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
         $orderAmount=$order['orders']['order'][0]['amount'];
         
-        addInvoicePayment($orderId, $razorpayPaymentId, $orderAmount, 0, $gatewayParams["name"]);
+        addInvoicePayment($orderId, $razorpayPaymentId, $orderAmount, 0, $gatewayModuleName);
         logTransaction($gatewayParams["name"], $log, "Successful"); # Save to Gateway Log: name, data array, status
     }
     else

@@ -11,9 +11,9 @@ use Razorpay\Api\Errors\ErrorCode;
 
 // Available since PHP 5.5.19 and 5.6.3
 // https://git.io/fAMVS | https://secure.php.net/manual/en/curl.constants.php
-if (defined('CURL_SSLVERSION_TLSv1_1') === false)
+if (defined('CURL_SSLVERSION_TLSv1_2') === false)
 {
-    define('CURL_SSLVERSION_TLSv1_1', 5);
+    define('CURL_SSLVERSION_TLSv1_2', 6);
 }
 
 /**
@@ -62,7 +62,10 @@ class Request
 
     public function setCurlSslOpts($curl)
     {
-        curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_1);
+        // Razorpay's API (and PCI-DSS generally) requires TLS 1.2+.
+        // TLS 1.1 is now rejected by most gateways, which previously caused
+        // every API call made by this SDK to fail outright.
+        curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
     }
 
     /**

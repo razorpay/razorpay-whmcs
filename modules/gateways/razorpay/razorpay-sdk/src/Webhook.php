@@ -30,7 +30,7 @@ class Webhook extends Entity
      *
      * @return Webhooks
      */
-    public function edit($attributes = array(), $id)
+    public function edit($id, $attributes = array())
     {
         $url = $this->getEntityUrl() . $id;
 

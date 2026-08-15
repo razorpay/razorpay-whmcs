@@ -16,6 +16,7 @@ require_once __DIR__ . '/rzpordermapping.php';
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 // Detect module name from filename.
 $gatewayModuleName = 'razorpay';
@@ -30,8 +31,8 @@ if (!$gatewayParams['type'])
 }
 
 // Retrieve data returned in payment gateway callback
-$merchant_order_id   = (isset($_POST['merchant_order_id']) === true) ? $_POST['merchant_order_id'] : $_GET['merchant_order_id'];
-$razorpay_payment_id = $_POST['razorpay_payment_id'];
+$merchant_order_id   = (isset($_POST['merchant_order_id']) === true) ? $_POST['merchant_order_id'] : (isset($_GET['merchant_order_id']) === true ? $_GET['merchant_order_id'] : null);
+$razorpay_payment_id = (isset($_POST['razorpay_payment_id']) === true) ? $_POST['razorpay_payment_id'] : null;
 
 // Validate Callback Invoice ID.
 $merchant_order_id = checkCbInvoiceID($merchant_order_id, $gatewayParams['name']);
@@ -40,27 +41,30 @@ $merchant_order_id = checkCbInvoiceID($merchant_order_id, $gatewayParams['name']
 * Fetch amount to verify transaction
 */
 # Fetch invoice to get the amount and userid
-$result = mysql_fetch_assoc(select_query('tblinvoices', '*', array("id"=>$merchant_order_id)));
+$result = Capsule::table('tblinvoices')->where('id', $merchant_order_id)->first();
 
 #check whether order is already paid or not, if paid then redirect to complete page
-if($result['status'] === 'Paid')
+if (isset($result) === true and $result->status === 'Paid')
 {
     header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id); // nosemgrep : php.lang.security.non-literal-header.non-literal-header
-    
+
     exit;
 }
 
-$amount = $result['total'];
+$amount = $result->total;
 
 $error = "";
 
 try
 {
+    // Check Callback Transaction ID.
+    checkCbTransID($razorpay_payment_id);
+
     verifySignature($merchant_order_id, $_POST, $gatewayParams);
 
     # Successful
     # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
-    addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amount, 0, $gatewayParams["name"]);
+    addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amount, 0, $gatewayModuleName);
 
     logTransaction($gatewayParams["name"], $_POST, "Successful"); # Save to Gateway Log: name, data array, status
 }
@@ -70,7 +74,7 @@ catch (Errors\SignatureVerificationError $e)
 
     # Unsuccessful
     # Save to Gateway Log: name, data array, status
-    logTransaction($gatewayParams["name"], $_POST, "Unsuccessful-".$error . ". Please check razorpay dashboard for Payment id: ".$_POST['razorpay_payment_id']);
+    logTransaction($gatewayParams["name"], $_POST, "Unsuccessful-".$error . ". Please check razorpay dashboard for Payment id: ".$razorpay_payment_id);
 }
 
 header("Location: ".$gatewayParams['systemurl']."/viewinvoice.php?id=" . $merchant_order_id); // nosemgrep : php.lang.security.non-literal-header.non-literal-header
@@ -95,8 +99,8 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
     $api = getApiInstance($gatewayParams['keyId'], $gatewayParams['keySecret']);
 
     $attributes = array(
-        RAZORPAY_PAYMENT_ID => $response[RAZORPAY_PAYMENT_ID],
-        RAZORPAY_SIGNATURE  => $response[RAZORPAY_SIGNATURE],
+        RAZORPAY_PAYMENT_ID => (isset($response[RAZORPAY_PAYMENT_ID]) === true) ? $response[RAZORPAY_PAYMENT_ID] : "",
+        RAZORPAY_SIGNATURE  => (isset($response[RAZORPAY_SIGNATURE]) === true) ? $response[RAZORPAY_SIGNATURE] : "",
     );
 
     $sessionKey = getOrderSessionKey($order_no);
@@ -111,16 +115,8 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
         logTransaction($gatewayParams['name'], $sessionKey, "Session not found");
         try
         {
-            if (isset($order_no) === true)
-            {
-                $rzpOrderMapping = new RZPOrderMapping($gatewayParams['name']);
-                $razorpayOrderId = $rzpOrderMapping->getRazorpayOrderID($order_no);
-            }
-            else
-            {
-                $error = "merchant_order_id is not set";
-                logTransaction($gatewayParams['name'], $error, "Validation Failure");
-            }
+            $rzpOrderMapping = new RZPOrderMapping($gatewayParams['name']);
+            $razorpayOrderId = $rzpOrderMapping->getRazorpayOrderID($order_no);
         }
         catch (Exception $e)
         {
@@ -128,6 +124,6 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
         }
     }
 
-    $attributes[RAZORPAY_ORDER_ID] = $razorpayOrderId;
+    $attributes[RAZORPAY_ORDER_ID] = (isset($razorpayOrderId) === true) ? $razorpayOrderId : "";
     $api->utility->verifyPaymentSignature($attributes);
 }
