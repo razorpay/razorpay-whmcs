@@ -68,7 +68,7 @@ class RZPOrderMapping
             ->orderBy('id', 'desc')
             ->first();
 
-        return $result->razorpay_order_id;
+        return (isset($result) === true) ? $result->razorpay_order_id : null;
     }
 
     function validateMerchantOrderID($merchant_order_id)

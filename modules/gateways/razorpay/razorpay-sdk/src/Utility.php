@@ -71,6 +71,36 @@ class Utility
         }
     }
 
+    public function generateOnboardingSignature($data, $secret){
+        $jsonStr = json_encode($data);
+        return $this->encrypt($jsonStr, $secret);
+    }
+    
+    private function encrypt($dataToEncrypt, $secret) {
+        try {
+            $key = substr($secret, 0, 16);
+
+            // Generate a fresh random 12-byte nonce per call (fixes AES-GCM nonce reuse).
+            // A static IV derived from the key allows keystream recovery and tag forgery
+            // (NIST SP 800-38D §8.3 Forbidden Attack) using only two captured ciphertexts.
+            $iv = random_bytes(12);
+
+            $cipher = 'aes-128-gcm';
+            $tag = '';
+            $encryptedData = openssl_encrypt($dataToEncrypt, $cipher, $key, OPENSSL_RAW_DATA, $iv, $tag, '', 16);
+
+            if ($encryptedData === false) {
+                throw new \Exception('Encryption failed');
+            }
+
+            // Output format: iv (12 bytes) || ciphertext || tag (16 bytes), hex-encoded.
+            // Receiver must read the first 24 hex chars as the IV before decrypting.
+            return bin2hex($iv . $encryptedData . $tag);
+        } catch (\Exception $e) {
+            throw new \Exception('Encryption failed: ' . $e->getMessage());
+        }
+    }
+
     private function hashEquals($expectedSignature, $actualSignature)
     {
         if (strlen($expectedSignature) === strlen($actualSignature))

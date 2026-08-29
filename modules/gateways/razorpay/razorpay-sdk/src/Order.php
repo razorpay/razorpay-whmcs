@@ -2,6 +2,8 @@
 
 namespace Razorpay\Api;
 
+use Requests;
+
 class Order extends Entity
 {
     /**
@@ -9,7 +11,13 @@ class Order extends Entity
      */
     public function create($attributes = array())
     {
-        return parent::create($attributes);
+        $url = $this->getEntityUrl();
+        $attributes = json_encode($attributes);   
+
+        Request::addHeader('Content-Type', 'application/json');
+        $response = $this->request('POST', $url, $attributes);
+        Request::removeHeader('Content-Type');
+        return $response; 
     }
 
     public function fetch($id)
@@ -41,5 +49,19 @@ class Order extends Entity
         $relativeUrl = $this->getEntityUrl().$this->id;
 
         return $this->request('GET', $relativeUrl, $options);
+    }
+
+    public function viewRtoReview()
+    {
+        $relativeUrl = $this->getEntityUrl(). $this->id .'/rto_review';
+
+        return $this->request('POST', $relativeUrl);
+    }
+
+    public function editFulfillment($attributes = array())
+    {
+        $relativeUrl = $this->getEntityUrl(). $this->id .'/fulfillment';
+
+        return $this->request('POST', $relativeUrl, $attributes);
     }
 }
