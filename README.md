@@ -16,7 +16,7 @@ Allows you to use Razorpay payment gateway with the WHMCS Store.
 
 ## Branches
 
- - Use the `master` branch if you are on WHMCS 6 / WHMCS 7 / WHMCS 8 / WHMCS 8
+ - Use the `master` branch if you are on WHMCS 6 / WHMCS 7 / WHMCS 8 / WHMCS 9
  - Use the `whmcs-5` branch if you are on WHMCS 5
 
 ## Configuration
