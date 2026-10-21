@@ -13,6 +13,7 @@ require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 require_once __DIR__ . '/razorpay-sdk/Razorpay.php';
 require_once __DIR__ . '/rzpordermapping.php';
+require_once __DIR__ . '/ucartz-rzp-checks.php';
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
@@ -78,7 +79,7 @@ try
     // Check Callback Transaction ID.
     checkCbTransID($razorpay_payment_id);
 
-    verifySignature($merchant_order_id, $_POST, $gatewayParams);
+    $verifiedOrderId = verifySignature($merchant_order_id, $_POST, $gatewayParams);
 
     // Credit the amount Razorpay actually captured for THIS payment - never
     // a value re-derived from the invoice (e.g. its `total` column, as this
@@ -93,18 +94,44 @@ try
     $razorpayPayment = $api->payment->fetch($razorpay_payment_id);
     $amountPaid = ((float) $razorpayPayment['amount']) / 100;
 
-    // Razorpay returns fee (total gateway charge including GST) in paise.
-    // Only populated after capture; null for authorize-only payments — fall
-    // back to 0 so the invoice is still credited correctly in that case.
-    // This value is what Razorpay deducts from your settlement and matches
-    // the "Fee" column in your Razorpay Dashboard.
-    $gatewayFee = round(((float) ($razorpayPayment['fee'] ?? 0)) / 100, 2);
+    // Ucartz (21 Oct 2026): the signature only proves the payment belongs to the posted Razorpay order. Also require
+    // that the order was created for THIS invoice, that the payment is in the invoice's currency and captured, so a
+    // genuine payment for one invoice cannot be credited to another (ucartz-rzp-checks.php).
+    $razorpayOrder = $api->order->fetch($verifiedOrderId);
+    $mismatch = ucartz_rzp_mismatch($merchant_order_id, $razorpayPayment, $razorpayOrder, $verifiedOrderId, $gatewayParams);
+    if ($mismatch !== '')
+    {
+        throw new RuntimeException('Ucartz check failed, payment NOT applied: ' . $mismatch);
+    }
 
-    # Successful
-    # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
-    addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amountPaid, $gatewayFee, $gatewayModuleName);
+    // Razorpay's fee (including GST) in the payment's currency: Razorpay reports it in INR for every payment, so
+    // non-INR fees are converted (a $14.00 payment was recorded with a fee of 38.85 before).
+    $gatewayFee = ucartz_rzp_fee($razorpayPayment);
 
-    logTransaction($gatewayParams["name"], $_POST, "Successful"); # Save to Gateway Log: name, data array, status
+    // The webhook can process the same payment at the same moment: one at a time, and never twice.
+    if (!ucartz_rzp_lock($razorpay_payment_id))
+    {
+        throw new RuntimeException('could not lock payment ' . $razorpay_payment_id . ' (busy), payment NOT applied here');
+    }
+    try
+    {
+        if (ucartz_rzp_recorded($razorpay_payment_id))
+        {
+            logTransaction($gatewayParams["name"], $_POST, "INFO - payment already recorded (webhook was first)");
+        }
+        else
+        {
+            # Successful
+            # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
+            addInvoicePayment($merchant_order_id, $razorpay_payment_id, $amountPaid, $gatewayFee, $gatewayModuleName);
+
+            logTransaction($gatewayParams["name"], $_POST, "Successful"); # Save to Gateway Log: name, data array, status
+        }
+    }
+    finally
+    {
+        ucartz_rzp_unlock($razorpay_payment_id);
+    }
 }
 catch (Errors\SignatureVerificationError $e)
 {
@@ -197,4 +224,6 @@ function verifySignature(int $order_no, array $response, $gatewayParams)
 
     $attributes[RAZORPAY_ORDER_ID] = $razorpayOrderId;
     $api->utility->verifyPaymentSignature($attributes);
+
+    return $razorpayOrderId;
 }

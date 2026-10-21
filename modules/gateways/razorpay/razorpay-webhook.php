@@ -6,6 +6,7 @@ require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 require_once __DIR__ . '/razorpay-sdk/Razorpay.php';
 require_once __DIR__ . '/rzpordermapping.php';
+require_once __DIR__ . '/ucartz-rzp-checks.php';
 
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
@@ -191,45 +192,69 @@ function orderPaid(array $data, $gatewayParams, $gatewayModuleName)
         return;
     }
 
-    $success = false;
-    $error = "";
-    $error = 'The payment has failed.';
-
-    $amount = getOrderAmountAsInteger($order);
-
-    if($data['payload']['payment']['entity']['amount'] === $amount)
-    {
-        $success = true;
-    }
-    else
-    {
-        $error = 'WHMCS_ERROR: Payment to Razorpay Failed. Amount mismatch.';
-    }
-
-    $log = [
-        'merchant_order_id'   => $orderId,
-        'razorpay_payment_id' => $razorpayPaymentId,
-        'webhook' => true
-    ];
-
-    if ($success === true)
-    {
-        # Successful
-        # Apply Payment to Invoice: invoiceid, transactionid, amount paid, fees, modulename
-        $orderAmount=$order['orders']['order'][0]['amount'];
-        
-        addInvoicePayment($orderId, $razorpayPaymentId, $orderAmount, 0, $gatewayModuleName);
-        logTransaction($gatewayParams["name"], $log, "Successful"); # Save to Gateway Log: name, data array, status
-    }
-    else
-    {
-        # Unsuccessful
-        # Save to Gateway Log: name, data array, status
-        logTransaction($gatewayParams["name"], $log, "Unsuccessful-".$error . ". Please check razorpay dashboard for Payment id: ".$razorpayPaymentId);
-    }
+    // Ucartz (21 Oct 2026): credit what Razorpay captured, checked against the invoice (currency, captured), with the
+    // real fee, once. It used to compare with the order amount (a 0.02 rounding difference left an invoice unpaid
+    // by this path) and to record the order amount with fee 0.
+    ucartzWebhookApply($orderId, $razorpayPaymentId, $data, $gatewayParams, $gatewayModuleName, 'order-row');
 
     // Graceful exit since payment is now processed.
     exit;
+}
+
+/**
+ * Ucartz (21 Oct 2026): one way to credit an order.paid payment, for both paths. The invoice comes from the signed
+ * order notes; the payment must be in the invoice's currency and captured; the amount is what Razorpay captured; the
+ * fee is converted from INR; a lock and a transaction check stop the callback and the webhook recording it twice.
+ */
+function ucartzWebhookApply($invoiceId, $razorpayPaymentId, array $data, $gatewayParams, $gatewayModuleName, $path)
+{
+    $payment = $data['payload']['payment']['entity'] ?? [];
+    $log = [
+        'merchant_invoice_id' => $invoiceId,
+        'razorpay_payment_id' => $razorpayPaymentId,
+        'webhook' => true,
+        'path' => $path,
+    ];
+
+    $status = Capsule::table('tblinvoices')->where('id', $invoiceId)->value('status');
+    if ($status === null)
+    {
+        logTransaction($gatewayParams['name'], $log, "INFO - invoice not found");
+        return;
+    }
+    if ($status === 'Paid')
+    {
+        logTransaction($gatewayParams['name'], $log, "INFO - invoice already paid");
+        return;
+    }
+
+    $mismatch = ucartz_rzp_mismatch($invoiceId, $payment, null, null, $gatewayParams);
+    if ($mismatch !== '')
+    {
+        logTransaction($gatewayParams['name'], $log, "Unsuccessful-WHMCS_ERROR: payment NOT applied: " . $mismatch . ". Please check razorpay dashboard for Payment id: " . $razorpayPaymentId);
+        return;
+    }
+
+    if (!ucartz_rzp_lock($razorpayPaymentId))
+    {
+        logTransaction($gatewayParams['name'], $log, "Unsuccessful-WHMCS_ERROR: payment busy (lock), NOT applied by the webhook; check the invoice for Payment id: " . $razorpayPaymentId);
+        return;
+    }
+    try
+    {
+        if (ucartz_rzp_recorded($razorpayPaymentId))
+        {
+            logTransaction($gatewayParams['name'], $log, "INFO - payment already recorded (callback was first)");
+            return;
+        }
+        $amountPaid = ((float) ($payment['amount'] ?? 0)) / 100;
+        addInvoicePayment($invoiceId, $razorpayPaymentId, $amountPaid, ucartz_rzp_fee($payment), $gatewayModuleName);
+        logTransaction($gatewayParams['name'], $log, "Successful");
+    }
+    finally
+    {
+        ucartz_rzp_unlock($razorpayPaymentId);
+    }
 }
 
 /**
@@ -245,41 +270,9 @@ function orderPaid(array $data, $gatewayParams, $gatewayModuleName)
  */
 function orderPaidNoOrderRow($invoiceId, $razorpayPaymentId, array $data, $gatewayParams, $gatewayModuleName)
 {
-    $invoice = Capsule::table('tblinvoices')->select('id', 'status', 'total')->where('id', $invoiceId)->first();
-
-    if (isset($invoice) === false)
-    {
-        logTransaction($gatewayParams['name'], "invoice not found for ".$invoiceId, "INFO");
-        return;
-    }
-
-    // Already paid (for example the synchronous callback already handled it, and this webhook
-    // is a redundant confirmation, which is the normal case): nothing to do.
-    if ($invoice->status === 'Paid')
-    {
-        logTransaction($gatewayParams['name'], "invoice ".$invoiceId." already paid, no-order-row path", "INFO");
-        return;
-    }
-
-    $paidAmount = (int) $data['payload']['payment']['entity']['amount'];
-    $invoiceAmount = (int) round(((float) $invoice->total) * 100);
-
-    $log = [
-        'merchant_invoice_id' => $invoiceId,
-        'razorpay_payment_id' => $razorpayPaymentId,
-        'webhook' => true,
-        'path' => 'no-order-row-fallback',
-    ];
-
-    if ($paidAmount === $invoiceAmount)
-    {
-        addInvoicePayment($invoiceId, $razorpayPaymentId, $invoice->total, 0, $gatewayModuleName);
-        logTransaction($gatewayParams['name'], $log, "Successful");
-    }
-    else
-    {
-        logTransaction($gatewayParams['name'], $log, "Unsuccessful-WHMCS_ERROR: Payment to Razorpay Failed. Amount mismatch. Please check razorpay dashboard for Payment id: ".$razorpayPaymentId);
-    }
+    // Ucartz (21 Oct 2026): compared with the invoice total (fails for part-paid invoices) and recorded the total with
+    // fee 0; now the shared checks and the captured amount.
+    ucartzWebhookApply($invoiceId, $razorpayPaymentId, $data, $gatewayParams, $gatewayModuleName, 'no-order-row-fallback');
 }
 
 /**
