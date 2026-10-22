@@ -2,7 +2,7 @@
 
 All notable changes to this module are documented here.
 
-## Unreleased
+## 3.1.0 — 2026-10-22
 
 ### Security
 - **A genuine payment for one invoice could be credited to a different invoice.** The payment callback's signature check only proves that the payment belongs to the Razorpay order that was posted — not that the order belongs to the invoice that was posted. The callback now credits a payment only if all of these hold: the payment belongs to the signature-verified order; that order was created for this invoice (its `receipt` or `whmcs_order_id` note); the payment currency matches the invoice currency; and the payment is captured. Otherwise the payment is not applied and the reason is logged. The webhook applies the same currency/captured checks (the invoice there comes from the signed order notes).

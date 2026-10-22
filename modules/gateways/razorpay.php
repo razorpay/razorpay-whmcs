@@ -11,7 +11,7 @@ require_once __DIR__.'/razorpay/rzpordermapping.php';
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors;
 
-const RAZORPAY_WHMCS_VERSION= '3.0.1';
+const RAZORPAY_WHMCS_VERSION= '3.1.0';
 const RAZORPAY_PAYMENT_ID   = 'razorpay_payment_id';
 const RAZORPAY_ORDER_ID     = 'razorpay_order_id';
 const RAZORPAY_SIGNATURE    = 'razorpay_signature';
